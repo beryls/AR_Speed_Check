@@ -7,16 +7,52 @@ namespace :speedcheck do
 
     # puts Location.joins(:teams).where("name" => "New York")
 
-    a =  Team.joins(:location, :mascot).where("mascot_id" => "54")[1].inspect
+    # a =  Team.joins(:location, :mascot).where("mascot_id" => "54")[1].inspect
 
-    # puts Mascot.joins(:teams, :locations).where("name" => "Jets")[2].inspect
+    # mascots = Mascot.where(name: "Giants").joins(:teams, :locations)
+    # mascots.each do |mascot|
+    #   puts mascot.name
+    # end
+
+    mascots = Mascot.where(name: "Giants").includes(:teams, :locations)
+    mascots.each do |mascot|
+      mascot.teams.each do |team|
+        puts Location.find(team.location_id).name
+      end
+    end
+
+    puts "break"
+
+    mascots = Mascot.where(name: "Giants").joins(:teams, :locations)
+    mascots.each do |mascot|
+      mascot.teams.each do |team|
+        puts Location.find(team.location_id).name
+      end
+    end
+
+    # puts "break"
+
+    # teams = Team.includes(:mascot, :location)
+    # teams.each do |team|
+    #   puts Mascot.where(id = team.league_id)
+    # end
+
+
+    # c = (Team.includes(:mascot).where('name = ?', 'Giants').references(:mascot).each do |team|
+    #   puts Location.find(team.location_id).name
+    # end)
+
+    # puts Benchmark.measure { a * 1000 }
+    # puts Benchmark.measure { b * 1000 }
+    # puts Benchmark.measure { c * 1000 }
+    # .where("name" => "Jets")[2].inspect
 
     # a = Location.joins(:teams).where("name" => "New York")
     # locations = Location.includes(:teams, :mascots).where("name" => "New York")
     # locations.each do |location|
     #   puts location.teams.select(:league_id).inspect
     # end
-    puts Benchmark.measure { a * 1000 }
+    # puts Benchmark.measure { a * 1000 }
   end
 end
 
