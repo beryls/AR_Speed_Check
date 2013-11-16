@@ -2,65 +2,177 @@ require 'benchmark'
 
 namespace :speedcheck do
   desc "Checks speed of various database calls"
-  task joins: :environment do
-    # Location.includes(:teams).where("name" => "New York")
+  task queries: :environment do
+    # grab all teams with a location of New York
+    # print out locations and mascots of New York teams
+    # benchmark each method for time
 
-    # puts Location.joins(:teams).where("name" => "New York")
-
-    # a =  Team.joins(:location, :mascot).where("mascot_id" => "54")[1].inspect
-
-    # mascots = Mascot.where(name: "Giants").joins(:teams, :locations)
-    # mascots.each do |mascot|
-    #   puts mascot.name
-    # end
-
-    mascots = Mascot.where(name: "Giants").includes(:teams, :locations)
-    mascots.each do |mascot|
-      mascot.teams.each do |team|
-        puts Location.find(team.location_id).name
+    def run_each_location
+      Location.all.each do |location|
+        if location.state_province == "New York"
+          Team.where(location_id = location.id).each do |team|
+            "#{location.name} #{Mascot.find(team.mascot_id).name}"
+          end
+        end
       end
     end
 
-    puts "break"
-
-    mascots = Mascot.where(name: "Giants").joins(:teams, :locations)
-    mascots.each do |mascot|
-      mascot.teams.each do |team|
-        puts Location.find(team.location_id).name
+    def run_each_team
+      Team.all.each do |team|
+        if Location.find(id = team.location_id).state_province == "New York"
+          "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+        end
       end
     end
 
-    # puts "break"
+    def run_includes
+      locations = Location.where(state_province: "New York").includes(:teams, :mascots)
+      locations.each do |location|
+        location.teams.each do |team|
+          "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+        end
+      end
+    end
 
-    # teams = Team.includes(:mascot, :location)
-    # teams.each do |team|
-    #   puts Mascot.where(id = team.league_id)
+    def run_joins
+      locations = Location.where(state_province: "New York").joins(:teams, :mascots).uniq
+      locations.each do |location|
+        location.teams.each do |team|
+          "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+        end
+      end
+    end
+
+    def run_eager_load
+      locations = Location.where(state_province: "New York").eager_load(:teams, :mascots)
+      locations.each do |location|
+        location.teams.each do |team|
+          "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+        end
+      end
+    end
+
+    def run_preload
+      locations = Location.where(state_province: "New York").preload(:teams, :mascots)
+      locations.each do |location|
+        location.teams.each do |team|
+          "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+        end
+      end
+    end
+
+    # def run_includes_where
+    #   locations = Location.includes(:teams, :mascots).where(state_province: "New York")
+    #   locations.each do |location|
+    #     location.teams.each do |team|
+    #       "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+    #     end
+    #   end
     # end
 
-
-    # c = (Team.includes(:mascot).where('name = ?', 'Giants').references(:mascot).each do |team|
-    #   puts Location.find(team.location_id).name
-    # end)
-
-    # puts Benchmark.measure { a * 1000 }
-    # puts Benchmark.measure { b * 1000 }
-    # puts Benchmark.measure { c * 1000 }
-    # .where("name" => "Jets")[2].inspect
-
-    # a = Location.joins(:teams).where("name" => "New York")
-    # locations = Location.includes(:teams, :mascots).where("name" => "New York")
-    # locations.each do |location|
-    #   puts location.teams.select(:league_id).inspect
+    # def run_joins_where
+    #   locations = Location.joins(:teams, :mascots).where(state_province: "New York").uniq
+    #   locations.each do |location|
+    #     location.teams.each do |team|
+    #       "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+    #     end
+    #   end
     # end
-    # puts Benchmark.measure { a * 1000 }
+
+    # def run_eager_load_where
+    #   locations = Location.eager_load(:teams, :mascots).where(state_province: "New York")
+    #   locations.each do |location|
+    #     location.teams.each do |team|
+    #       "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+    #     end
+    #   end
+    # end
+
+    # def run_preload_where
+    #   locations = Location.preload(:teams, :mascots).where(state_province: "New York")
+    #   locations.each do |location|
+    #     location.teams.each do |team|
+    #       "#{Location.find(team.location_id).name} #{Mascot.find(team.mascot_id).name}"
+    #     end
+    #   end
+    # end
+
+    N = 10
+    Benchmark.bm(20) do |rep|
+
+      rep.report('Each Location:') do
+        N.times do
+          run_each_location
+        end
+      end
+
+      rep.report('Each Team:') do
+        N.times do
+          run_each_team
+        end
+      end
+
+      rep.report('Includes:') do
+        N.times do
+          run_includes
+        end
+      end
+
+      rep.report('Joins:') do
+        N.times do
+          run_joins
+        end
+      end
+
+      rep.report('Eager Load:') do
+        N.times do
+          run_eager_load
+        end
+      end
+
+      rep.report('Preload:') do
+        N.times do
+          run_preload
+        end
+      end
+
+      # rep.report('Includes Where:') do
+      #   N.times do
+      #     run_includes_where
+      #   end
+      # end
+
+      # rep.report('Joins Where:') do
+      #   N.times do
+      #     run_joins_where
+      #   end
+      # end
+
+      # rep.report('Eager Load Where:') do
+      #   N.times do
+      #     run_eager_load_where
+      #   end
+      # end
+
+      # rep.report('Preload Where:') do
+      #   N.times do
+      #     run_preload_where
+      #   end
+      # end
+
+
+    end
+
   end
 end
 
+# c = (Team.includes(:mascot).where('name = ?', 'Giants').references(:mascot).each do |team|
+    #   puts Location.find(team.location_id).name
+    # end)
 
-# grab all teams with a location of New York
-# print out mascots of New York teams
-
-
+# select mascot.name, league.name from MASCOT, LEAGUE, LOCATION, TEAM where
+# Mascot.id = team.mascot_id and league.id = team.league_id and location.id = team.location_id and
+# location.name = "New York"
 
 
 # Mascot.all(joins: :leagues, conditions: {leagues: {id: 1}})
