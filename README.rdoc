@@ -1,28 +1,13 @@
-== README
+This rails app creates a database with the teams from the 4 major American sports leagues: NFL, NBA, MLB, and NHL.
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Once the database has been migrated, a speed check for a number of different ActiveRecord queries can be run.
+The commands return the 10 sports teams located in the state of New York (and yes, I'm including the Giants and Jets).
 
-Things you may want to cover:
+The rake command for this speed check is "rake speedcheck:queries".
+This command uses benchmark to measure the speed of the queries written, which include the following:
 
-* Ruby version
-
-* System dependencies
-
-* Configuration
-
-* Database creation
-
-* Database initialization
-
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
-
-
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+.all.each (2 different queries)
+.includes
+.joins
+.eager_load
+.preload
